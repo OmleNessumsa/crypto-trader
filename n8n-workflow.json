@@ -1,0 +1,69 @@
+{
+  "name": "Crypto Trader - Vercel Triggers",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 30 }]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "schedule-30min",
+      "name": "Every 30 min"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 4 }]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 200],
+      "id": "schedule-4h",
+      "name": "Every 4 hours"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.VERCEL_URL}}/api/trading/tick",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{$env.CRON_SECRET}}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [300, 0],
+      "id": "tick-request",
+      "name": "POST /tick"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.VERCEL_URL}}/api/trading/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{$env.CRON_SECRET}}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [300, 200],
+      "id": "analyze-request",
+      "name": "POST /analyze"
+    }
+  ],
+  "connections": {
+    "Every 30 min": { "main": [[{ "node": "POST /tick", "type": "main", "index": 0 }]] },
+    "Every 4 hours": { "main": [[{ "node": "POST /analyze", "type": "main", "index": 0 }]] }
+  }
+}
