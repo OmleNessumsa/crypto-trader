@@ -50,13 +50,17 @@ export async function POST(req: NextRequest) {
     const config = await getConfig();
     const portfolio = await getPortfolio();
     const state = await getState();
+    const now = new Date().toISOString();
+
+    // Always update lastTickTime so dashboard shows tick is running
+    await setState({ ...state, lastTickTime: now });
 
     // Early exit if not enabled or drawdown paused
     if (!config.enabled) {
-      return NextResponse.json({ status: "disabled" });
+      return NextResponse.json({ status: "disabled", lastTickTime: now });
     }
     if (portfolio?.drawdownPaused) {
-      return NextResponse.json({ status: "drawdown_paused" });
+      return NextResponse.json({ status: "drawdown_paused", lastTickTime: now });
     }
 
     // Cooldown check
@@ -172,7 +176,6 @@ export async function POST(req: NextRequest) {
     // Update portfolio state
     const newTotalValue = computePortfolioValue(updatedBalances, prices);
     const newPeak = Math.max(peakValue, newTotalValue);
-    const now = new Date().toISOString();
 
     const updatedPortfolio: PortfolioState = {
       balances: updatedBalances,
