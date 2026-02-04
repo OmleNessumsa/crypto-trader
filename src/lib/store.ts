@@ -1,11 +1,18 @@
-import { kv } from "@vercel/kv";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// Keys
-const PORTFOLIO_KEY = "portfolio";
-const CONFIG_KEY = "config";
-const TRADES_KEY = "trades";
-const STATE_KEY = "state";
-const PNL_KEY = "pnl";
+let supabase: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient {
+  if (!supabase) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables");
+    }
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabase;
+}
 
 // Types
 export interface PortfolioState {
@@ -79,48 +86,98 @@ const DEFAULT_STATE: SystemState = {
 
 // Store operations
 export async function getPortfolio(): Promise<PortfolioState | null> {
-  return kv.get<PortfolioState>(PORTFOLIO_KEY);
+  const { data } = await getSupabase()
+    .from("portfolio")
+    .select("data")
+    .eq("id", 1)
+    .single();
+  return data?.data ?? null;
 }
 
 export async function setPortfolio(p: PortfolioState): Promise<void> {
-  await kv.set(PORTFOLIO_KEY, p);
+  await getSupabase()
+    .from("portfolio")
+    .upsert({ id: 1, data: p }, { onConflict: "id" });
 }
 
 export async function getConfig(): Promise<TradingConfig> {
-  const c = await kv.get<TradingConfig>(CONFIG_KEY);
-  return c ?? DEFAULT_CONFIG;
+  const { data } = await getSupabase()
+    .from("config")
+    .select("data")
+    .eq("id", 1)
+    .single();
+  return data?.data ?? DEFAULT_CONFIG;
 }
 
 export async function setConfig(c: TradingConfig): Promise<void> {
-  await kv.set(CONFIG_KEY, c);
+  await getSupabase()
+    .from("config")
+    .upsert({ id: 1, data: c }, { onConflict: "id" });
 }
 
 export async function getState(): Promise<SystemState> {
-  const s = await kv.get<SystemState>(STATE_KEY);
-  return s ?? DEFAULT_STATE;
+  const { data } = await getSupabase()
+    .from("system_state")
+    .select("data")
+    .eq("id", 1)
+    .single();
+  return data?.data ?? DEFAULT_STATE;
 }
 
 export async function setState(s: SystemState): Promise<void> {
-  await kv.set(STATE_KEY, s);
+  await getSupabase()
+    .from("system_state")
+    .upsert({ id: 1, data: s }, { onConflict: "id" });
 }
 
 export async function addTrade(trade: TradeRecord): Promise<void> {
-  await kv.lpush(TRADES_KEY, JSON.stringify(trade));
-  // Keep last 500 trades
-  await kv.ltrim(TRADES_KEY, 0, 499);
+  await getSupabase().from("trades").insert({
+    trade_id: trade.id,
+    timestamp: trade.timestamp,
+    pair: trade.pair,
+    side: trade.side,
+    amount_eur: trade.amountEur,
+    price: trade.price,
+    reason: trade.reason,
+    order_id: trade.orderId,
+  });
 }
 
 export async function getTrades(limit = 50): Promise<TradeRecord[]> {
-  const raw = await kv.lrange<string>(TRADES_KEY, 0, limit - 1);
-  return raw.map((r) => (typeof r === "string" ? JSON.parse(r) : r));
+  const { data } = await getSupabase()
+    .from("trades")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(limit);
+
+  return (data ?? []).map((row) => ({
+    id: row.trade_id,
+    timestamp: row.timestamp,
+    pair: row.pair,
+    side: row.side,
+    amountEur: row.amount_eur,
+    price: row.price,
+    reason: row.reason,
+    orderId: row.order_id,
+  }));
 }
 
 export async function addPnLPoint(point: PnLPoint): Promise<void> {
-  await kv.lpush(PNL_KEY, JSON.stringify(point));
-  await kv.ltrim(PNL_KEY, 0, 999);
+  await getSupabase().from("pnl_history").insert({
+    timestamp: point.timestamp,
+    total_value_eur: point.totalValueEur,
+  });
 }
 
 export async function getPnLHistory(limit = 200): Promise<PnLPoint[]> {
-  const raw = await kv.lrange<string>(PNL_KEY, 0, limit - 1);
-  return raw.map((r) => (typeof r === "string" ? JSON.parse(r) : r));
+  const { data } = await getSupabase()
+    .from("pnl_history")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(limit);
+
+  return (data ?? []).map((row) => ({
+    timestamp: row.timestamp,
+    totalValueEur: row.total_value_eur,
+  }));
 }
