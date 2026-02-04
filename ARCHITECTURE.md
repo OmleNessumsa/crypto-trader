@@ -21,12 +21,22 @@ Automated cryptocurrency trading platform built with Next.js, Supabase, and inte
 ```
 src/
 ├── app/
-│   ├── api/trading/
-│   │   ├── analyze/route.ts   # AI market analysis (Claude)
-│   │   ├── config/route.ts    # GET/POST trading configuration
-│   │   ├── history/route.ts   # GET trade history & PnL
-│   │   ├── status/route.ts    # GET current portfolio status
-│   │   └── tick/route.ts      # POST main trading loop (cron)
+│   ├── api/
+│   │   ├── trading/
+│   │   │   ├── analyze/route.ts   # AI market analysis (Claude)
+│   │   │   ├── config/route.ts    # GET/POST trading configuration
+│   │   │   ├── history/route.ts   # GET trade history & PnL
+│   │   │   ├── status/route.ts    # GET current portfolio status
+│   │   │   └── tick/route.ts      # POST main trading loop (cron)
+│   │   ├── backtesting/
+│   │   │   └── run/route.ts       # POST/GET backtest runs
+│   │   ├── paper-trading/
+│   │   │   ├── tick/route.ts      # POST paper trading tick
+│   │   │   └── status/route.ts    # GET/POST paper trading status
+│   │   └── optimization/
+│   │       ├── run/route.ts       # POST run optimization
+│   │       ├── promote/route.ts   # GET/POST strategy promotion
+│   │       └── auto-promote/route.ts # POST auto-promote check
 │   ├── layout.tsx
 │   ├── page.tsx
 │   └── globals.css
@@ -45,11 +55,27 @@ src/
     ├── portfolio.ts           # Portfolio calculations
     ├── safety.ts              # Risk management (drawdown, cooldown)
     ├── store.ts               # Supabase data layer
-    └── strategy.ts            # Weight calculation logic
+    ├── strategy.ts            # Weight calculation logic
+    ├── backtesting/
+    │   ├── types.ts           # Backtest types & interfaces
+    │   ├── data-fetcher.ts    # Historical candle fetching with cache
+    │   ├── simulator.ts       # Trade simulation engine
+    │   └── backtester.ts      # Main backtest engine
+    ├── paper-trading/
+    │   ├── paper-store.ts     # Paper trading Supabase operations
+    │   └── paper-executor.ts  # Paper trade execution
+    ├── evaluation/
+    │   ├── metrics.ts         # Performance metrics calculation
+    │   ├── evaluator.ts       # Strategy evaluation
+    │   └── promoter.ts        # Paper to live promotion logic
+    └── optimization/
+        ├── grid-search.ts     # Parameter grid generation
+        └── optimizer.ts       # Grid search optimization engine
 ```
 
 ## Data Flow
 
+### Live Trading Flow
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │    n8n      │────▶│  /tick      │────▶│  Coinbase   │
@@ -67,6 +93,35 @@ src/
 │  Dashboard  │◀────│  /status    │
 │  (React)    │     │  endpoint   │
 └─────────────┘     └─────────────┘
+```
+
+### Backtesting & Optimization Flow
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Weekly Cron    │────▶│  /optimization  │────▶│  Backtester     │
+│  (n8n Sunday)   │     │  /run           │     │  (30d candles)  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+                        ┌───────────────────────────────┘
+                        ▼
+                 ┌─────────────────┐
+                 │  Strategy       │
+                 │  Candidates     │
+                 └─────────────────┘
+                        │
+        ┌───────────────┴───────────────┐
+        ▼                               ▼
+┌─────────────────┐             ┌─────────────────┐
+│  Paper Trading  │             │  Daily Cron     │
+│  (parallel)     │             │  /auto-promote  │
+└─────────────────┘             └─────────────────┘
+        │                               │
+        └───────────────┬───────────────┘
+                        ▼
+                 ┌─────────────────┐
+                 │  Promote to     │
+                 │  Live Config    │
+                 └─────────────────┘
 ```
 
 ## API Endpoints
@@ -130,27 +185,137 @@ Get or update trading configuration.
 ### `GET /api/trading/history`
 Returns trade history and PnL data.
 
+---
+
+## Backtesting & Paper Trading API
+
+### `POST /api/backtesting/run`
+Run a backtest on historical data.
+
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+**Body:**
+```json
+{
+  "days": 30,
+  "initialCapitalEur": 1000,
+  "strategyParams": {
+    "maxTradePercent": 0.2,
+    "stopLossPercent": 0.05,
+    "cooldownMinutes": 30,
+    "rsiOversoldThreshold": 30,
+    "rsiOverboughtThreshold": 70,
+    "baseWeights": {"BTC-EUR": 0.333, "ETH-EUR": 0.333, "SOL-EUR": 0.334}
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "status": "completed",
+  "runId": "uuid",
+  "metrics": {
+    "totalReturn": 0.15,
+    "sharpeRatio": 1.2,
+    "maxDrawdown": 0.08,
+    "winRate": 0.55,
+    "totalTrades": 45,
+    "combinedScore": 0.65
+  }
+}
+```
+
+### `GET /api/backtesting/run`
+List recent backtest runs.
+
+### `POST /api/paper-trading/tick`
+Execute a paper trading tick (parallel to live).
+
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "totalValueEur": 1023.45,
+  "trades": 2,
+  "indicators": {...},
+  "targetWeights": {...}
+}
+```
+
+### `GET /api/paper-trading/status`
+Get paper trading portfolio status.
+
+### `POST /api/paper-trading/status`
+Initialize or reset paper trading.
+
+**Body:**
+```json
+{
+  "action": "initialize|reset",
+  "initialCapital": 1000
+}
+```
+
+### `POST /api/optimization/run`
+Run grid search optimization.
+
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+**Body:**
+```json
+{
+  "mode": "reduced|full|neighborhood",
+  "days": 30,
+  "addCandidates": true,
+  "candidateCount": 3,
+  "maxCombinations": 50
+}
+```
+
+**Response:**
+```json
+{
+  "status": "completed",
+  "candidateIds": [1, 2, 3],
+  "best": {
+    "params": {...},
+    "score": 0.72,
+    "metrics": {...}
+  },
+  "topResults": [...]
+}
+```
+
+### `GET /api/optimization/promote`
+Get strategy candidates and their promotion status.
+
+### `POST /api/optimization/promote`
+Manage strategy promotions.
+
+**Body:**
+```json
+{
+  "action": "auto|manual|reject|rollback",
+  "candidateId": 1
+}
+```
+
+### `POST /api/optimization/auto-promote`
+Daily cron endpoint to check and auto-promote eligible strategies.
+
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
 ## Database Schema (Supabase)
 
+### Live Trading Tables
 ```sql
 -- Single-row tables for state
-CREATE TABLE portfolio (
-  id INT PRIMARY KEY DEFAULT 1,
-  data JSONB NOT NULL,
-  CHECK (id = 1)
-);
-
-CREATE TABLE config (
-  id INT PRIMARY KEY DEFAULT 1,
-  data JSONB NOT NULL,
-  CHECK (id = 1)
-);
-
-CREATE TABLE system_state (
-  id INT PRIMARY KEY DEFAULT 1,
-  data JSONB NOT NULL,
-  CHECK (id = 1)
-);
+CREATE TABLE portfolio (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
+CREATE TABLE config (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
+CREATE TABLE system_state (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
 
 -- History tables
 CREATE TABLE trades (
@@ -170,10 +335,70 @@ CREATE TABLE pnl_history (
   timestamp TIMESTAMPTZ NOT NULL,
   total_value_eur DECIMAL NOT NULL
 );
+```
 
--- Indexes
-CREATE INDEX idx_trades_timestamp ON trades(timestamp DESC);
-CREATE INDEX idx_pnl_timestamp ON pnl_history(timestamp DESC);
+### Paper Trading Tables
+```sql
+-- Mirror live trading tables for paper trading
+CREATE TABLE paper_portfolio (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
+CREATE TABLE paper_config (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
+CREATE TABLE paper_state (id INT PRIMARY KEY DEFAULT 1, data JSONB NOT NULL);
+
+CREATE TABLE paper_trades (
+  id SERIAL PRIMARY KEY,
+  trade_id TEXT NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL,
+  pair TEXT NOT NULL,
+  side TEXT NOT NULL,
+  amount_eur DECIMAL NOT NULL,
+  price DECIMAL NOT NULL,
+  reason TEXT,
+  strategy_id TEXT
+);
+
+CREATE TABLE paper_pnl_history (
+  id SERIAL PRIMARY KEY,
+  timestamp TIMESTAMPTZ NOT NULL,
+  total_value_eur DECIMAL NOT NULL,
+  strategy_id TEXT
+);
+```
+
+### Backtesting & Optimization Tables
+```sql
+-- Candle cache for historical data
+CREATE TABLE candle_cache (
+  id SERIAL PRIMARY KEY,
+  pair TEXT NOT NULL,
+  granularity TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  candles JSONB NOT NULL,
+  fetched_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(pair, granularity, start_time)
+);
+
+-- Backtest run history
+CREATE TABLE backtest_runs (
+  id SERIAL PRIMARY KEY,
+  run_id TEXT UNIQUE NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL,
+  completed_at TIMESTAMPTZ,
+  strategy_params JSONB NOT NULL,
+  results JSONB,
+  status TEXT DEFAULT 'running'
+);
+
+-- Strategy candidates for promotion
+CREATE TABLE strategy_candidates (
+  id SERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  strategy_params JSONB NOT NULL,
+  backtest_score DECIMAL,
+  paper_score DECIMAL,
+  paper_days_tested INT DEFAULT 0,
+  status TEXT DEFAULT 'paper_testing',
+  promoted_at TIMESTAMPTZ
+);
 ```
 
 ## Environment Variables
@@ -187,15 +412,31 @@ CREATE INDEX idx_pnl_timestamp ON pnl_history(timestamp DESC);
 | `COINBASE_PRIVATE_KEY` | EC private key (PEM format) | Vercel |
 | `ANTHROPIC_API_KEY` | Claude API key | Vercel |
 
-## n8n Workflow
+## n8n Workflows
 
-The n8n workflow triggers the trading loop:
+### Live Trading (Every 30 minutes)
+```
+Schedule Trigger → POST /api/trading/tick
+                 → (Optional) POST /api/trading/analyze
+```
 
-1. **Schedule Trigger** - Runs every X minutes
-2. **HTTP Request: POST /tick**
-   - URL: `{{$env.VERCEL_URL}}/api/trading/tick`
-   - Header: `Authorization: Bearer {{$env.CRON_SECRET}}`
-3. **(Optional) HTTP Request: POST /analyze** - For AI analysis
+### Paper Trading (Every 30 minutes)
+```
+Schedule Trigger → POST /api/paper-trading/tick
+```
+
+### Weekly Optimization (Sunday 02:00)
+```
+Schedule Trigger → POST /api/optimization/run
+                   Body: {"mode": "reduced", "addCandidates": true}
+```
+
+### Daily Auto-Promote (06:00)
+```
+Schedule Trigger → POST /api/optimization/auto-promote
+```
+
+All endpoints require header: `Authorization: Bearer {{$env.CRON_SECRET}}`
 
 ## Key Data Types
 
@@ -239,12 +480,68 @@ interface SystemState {
 }
 ```
 
+### StrategyParams (Backtesting)
+```typescript
+interface StrategyParams {
+  maxTradePercent: number;      // 0.10 - 0.30
+  stopLossPercent: number;      // 0.03 - 0.10
+  cooldownMinutes: number;      // 15 - 60
+  rsiOversoldThreshold: number; // 25 - 35
+  rsiOverboughtThreshold: number; // 65 - 75
+  baseWeights: Record<string, number>;
+}
+```
+
+### EvaluationMetrics
+```typescript
+interface EvaluationMetrics {
+  totalReturn: number;     // (final - initial) / initial
+  sharpeRatio: number;     // Risk-adjusted return
+  maxDrawdown: number;     // Largest peak-to-trough decline
+  winRate: number;         // Winning trades / total trades
+  totalTrades: number;
+  combinedScore: number;   // Weighted score (0-1)
+}
+```
+
+### StrategyCandidate
+```typescript
+interface StrategyCandidate {
+  id: number;
+  createdAt: string;
+  strategyParams: StrategyParams;
+  backtestScore: number | null;
+  paperScore: number | null;
+  paperDaysTested: number;
+  status: "paper_testing" | "promoted" | "rejected";
+  promotedAt: string | null;
+}
+```
+
+## Strategy Promotion Criteria
+
+For a strategy to be automatically promoted from paper to live:
+
+| Criterion | Threshold |
+|-----------|-----------|
+| Minimum backtest score | 60% |
+| Minimum paper trading days | 7 days |
+| Minimum paper score | 55% |
+| Maximum paper drawdown | 8% |
+
+**Combined Score Calculation:**
+- Total Return: 30%
+- Sharpe Ratio: 30%
+- Max Drawdown: 25% (inverted)
+- Win Rate: 15%
+
 ## Safety Features
 
 1. **Drawdown Protection** - Pauses trading if portfolio drops below threshold
 2. **Trade Cooldown** - Prevents overtrading with configurable wait period
 3. **Max Trade Size** - Limits single trade to percentage of portfolio
 4. **Min Trade Size** - Avoids dust trades below €5
+5. **Paper Testing** - New strategies must prove themselves in paper trading before going live
 
 ## Debugging
 
@@ -286,7 +583,12 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npx vercel --prod --yes
 
 - [ ] Add more trading pairs
 - [ ] Implement stop-loss execution
-- [ ] Add backtesting capability
+- [x] Add backtesting capability
 - [ ] Mobile-responsive dashboard
 - [ ] Webhook notifications (Telegram/Discord)
-- [ ] Multiple strategy support
+- [x] Multiple strategy support (via paper trading candidates)
+- [x] Paper trading (parallel to live)
+- [x] Strategy optimization (grid search)
+- [x] Automatic strategy promotion
+- [ ] Backtesting UI in dashboard
+- [ ] Paper trading performance comparison chart
