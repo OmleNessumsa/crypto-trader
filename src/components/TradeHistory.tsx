@@ -22,8 +22,8 @@ export default function TradeHistory({
   }
 
   return (
-    <div className="card p-6 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="card p-8 sm:p-10">
+      <div className="flex items-center justify-between mb-8">
         <h3 className="label">Trade History</h3>
         <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
           {trades.length} trades
@@ -31,11 +31,11 @@ export default function TradeHistory({
       </div>
 
       {trades.length === 0 ? (
-        <div className="text-center py-12" style={{ color: "var(--text-muted)" }}>
+        <div className="text-center py-16" style={{ color: "var(--text-muted)" }}>
           <p className="text-sm">No trades executed yet</p>
         </div>
       ) : (
-        <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
+        <div className="overflow-x-auto -mx-8 sm:-mx-10 px-8 sm:px-10">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr style={{ color: "var(--text-muted)" }}>

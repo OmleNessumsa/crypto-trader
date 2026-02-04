@@ -140,34 +140,34 @@ export default function Dashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8 animate-fade-up animate-delay-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10 animate-fade-up animate-delay-1">
         {/* Total Portfolio */}
-        <div className="card card-glow-emerald p-6 sm:p-8">
-          <p className="label mb-3">Total Portfolio Value</p>
+        <div className="card card-glow-emerald p-8 sm:p-10">
+          <p className="label mb-4">Total Portfolio Value</p>
           <p className="stat-value" style={{ color: 'var(--text-primary)' }}>
             €{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           {portfolio?.peakValueEur && portfolio.peakValueEur > totalValue && (
-            <p className="text-xs font-mono mt-3" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs font-mono mt-4" style={{ color: 'var(--text-muted)' }}>
               ATH €{portfolio.peakValueEur.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </p>
           )}
         </div>
 
         {/* EUR Balance */}
-        <div className="card card-glow-cyan p-6 sm:p-8">
-          <p className="label mb-3">Available EUR</p>
+        <div className="card card-glow-cyan p-8 sm:p-10">
+          <p className="label mb-4">Available EUR</p>
           <p className="stat-value" style={{ color: 'var(--text-primary)' }}>
             €{eurBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
             Ready for trading
           </p>
         </div>
       </div>
 
       {/* Coin Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 animate-fade-up animate-delay-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 animate-fade-up animate-delay-2">
         {pairs.map((pair) => (
           <CoinCard
             key={pair}
@@ -180,13 +180,13 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8 animate-fade-up animate-delay-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 animate-fade-up animate-delay-3">
         <PortfolioChart weights={portfolio?.weights ?? {}} />
         <PnLChart data={pnl} />
       </div>
 
       {/* Trade History */}
-      <div className="mb-8 animate-fade-up animate-delay-4">
+      <div className="mb-10 animate-fade-up animate-delay-4">
         <TradeHistory trades={trades} />
       </div>
 
@@ -194,7 +194,7 @@ export default function Dashboard() {
       <div className="animate-fade-up animate-delay-4">
         <button
           onClick={() => setConfigOpen(!configOpen)}
-          className="w-full card card-interactive p-5 sm:p-6 flex items-center justify-between"
+          className="w-full card card-interactive p-6 sm:p-8 flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--text-tertiary)' }}>

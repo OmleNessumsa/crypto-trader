@@ -28,10 +28,10 @@ export default function PortfolioChart({ weights }: { weights: Record<string, nu
   });
 
   return (
-    <div className="card p-6 sm:p-8">
-      <h3 className="label mb-6">Portfolio Allocation</h3>
+    <div className="card p-8 sm:p-10">
+      <h3 className="label mb-8">Portfolio Allocation</h3>
 
-      <div className="flex items-center gap-8 sm:gap-10">
+      <div className="flex items-center gap-10 sm:gap-12">
         {/* Donut */}
         <div className="relative flex-shrink-0">
           <svg width={size} height={size} className="-rotate-90">

@@ -24,10 +24,10 @@ export default function StrategyConfig({
   }
 
   return (
-    <div className="card p-6 sm:p-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="card p-8 sm:p-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Trading Toggle */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm">Trading</p>
@@ -42,7 +42,7 @@ export default function StrategyConfig({
         </div>
 
         {/* AI Toggle */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm">AI Analysis</p>
@@ -57,7 +57,7 @@ export default function StrategyConfig({
         </div>
 
         {/* Max Trade % */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Max Trade</p>
@@ -77,7 +77,7 @@ export default function StrategyConfig({
         </div>
 
         {/* Stop Loss */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Stop Loss</p>
@@ -97,7 +97,7 @@ export default function StrategyConfig({
         </div>
 
         {/* Max Drawdown */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Max Drawdown</p>
@@ -117,7 +117,7 @@ export default function StrategyConfig({
         </div>
 
         {/* Cooldown */}
-        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
+        <div className="p-6 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Cooldown</p>
@@ -138,7 +138,7 @@ export default function StrategyConfig({
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-8 flex justify-end">
         <button
           onClick={handleSave}
           disabled={saving}

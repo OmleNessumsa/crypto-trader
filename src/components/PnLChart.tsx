@@ -7,8 +7,8 @@ export default function PnLChart({
 }) {
   if (data.length < 2) {
     return (
-      <div className="card p-6 sm:p-8">
-        <h3 className="label mb-6">Performance</h3>
+      <div className="card p-8 sm:p-10">
+        <h3 className="label mb-8">Performance</h3>
         <div className="flex items-center justify-center h-24" style={{ color: "var(--text-muted)" }}>
           <span className="text-sm">Not enough data yet</span>
         </div>
@@ -44,8 +44,8 @@ export default function PnLChart({
   const gradientId = isUp ? "chart-grad-up" : "chart-grad-down";
 
   return (
-    <div className="card p-6 sm:p-8">
-      <div className="flex items-center justify-between mb-5">
+    <div className="card p-8 sm:p-10">
+      <div className="flex items-center justify-between mb-6">
         <h3 className="label">Performance</h3>
         <span
           className={`badge ${isUp ? "badge-emerald" : "badge-red"}`}
@@ -57,7 +57,7 @@ export default function PnLChart({
       </div>
 
       {/* Stats row */}
-      <div className="flex gap-8 mb-5 text-xs">
+      <div className="flex gap-10 mb-6 text-xs">
         <div>
           <span style={{ color: "var(--text-muted)" }}>Low</span>
           <p className="font-mono mt-0.5">€{min.toFixed(2)}</p>

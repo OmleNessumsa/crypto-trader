@@ -25,9 +25,9 @@ export default function CoinCard({
   const isUnder = weight < targetWeight - 0.01;
 
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card p-6 sm:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold"
@@ -51,7 +51,7 @@ export default function CoinCard({
       </div>
 
       {/* Balance */}
-      <div className="mb-5">
+      <div className="mb-6">
         <p className="font-mono text-xl sm:text-2xl font-semibold">
           {balance.toLocaleString(undefined, {
             minimumFractionDigits: balance < 1 ? 6 : 4,
