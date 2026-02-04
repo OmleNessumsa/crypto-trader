@@ -40,7 +40,10 @@ export default function Dashboard() {
       await fetchStatus();
       try {
         const res = await fetch("/api/trading/history");
-        if (res.ok) setTrades(await res.json());
+        if (res.ok) {
+          const data = await res.json();
+          setTrades(data.trades ?? []);
+        }
       } catch {}
       setLoading(false);
     }
