@@ -26,7 +26,24 @@ export async function POST(req: NextRequest) {
     // Auth check
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
+
+    // Debug logging - remove after troubleshooting
+    console.log("Auth debug:", {
+      hasAuthHeader: !!authHeader,
+      authHeaderLength: authHeader?.length,
+      authHeaderPrefix: authHeader?.substring(0, 10),
+      hasCronSecret: !!cronSecret,
+      cronSecretLength: cronSecret?.length,
+      expectedPrefix: "Bearer ",
+      headerStartsWithBearer: authHeader?.startsWith("Bearer "),
+    });
+
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+      console.log("Auth failed:", {
+        reason: !cronSecret ? "No CRON_SECRET env var" : "Header mismatch",
+        expected: cronSecret ? `Bearer ${cronSecret.substring(0, 4)}...` : "N/A",
+        received: authHeader ? `${authHeader.substring(0, 10)}...` : "N/A",
+      });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
