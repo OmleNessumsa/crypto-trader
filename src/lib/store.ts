@@ -116,29 +116,18 @@ export async function setConfig(c: TradingConfig): Promise<void> {
 }
 
 export async function getState(): Promise<SystemState> {
-  const { data, error } = await getSupabase()
+  const { data } = await getSupabase()
     .from("system_state")
     .select("data")
     .eq("id", 1)
     .single();
-
-  if (error) {
-    console.log("getState error:", error);
-  }
-  console.log("getState result:", { hasData: !!data, data: data?.data });
-
   return data?.data ?? DEFAULT_STATE;
 }
 
 export async function setState(s: SystemState): Promise<void> {
-  const { error } = await getSupabase()
+  await getSupabase()
     .from("system_state")
     .upsert({ id: 1, data: s }, { onConflict: "id" });
-
-  if (error) {
-    console.log("setState error:", error);
-  }
-  console.log("setState called with lastTickTime:", s.lastTickTime);
 }
 
 export async function addTrade(trade: TradeRecord): Promise<void> {
