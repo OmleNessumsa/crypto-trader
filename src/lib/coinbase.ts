@@ -1,37 +1,27 @@
-import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
 const BASE_URL = "https://api.coinbase.com/api/v3/brokerage";
 
-// CDP API Key format: organizations/{org_id}/apiKeys/{key_id}
-// Set COINBASE_API_KEY_NAME to the full key name
-// Set COINBASE_PRIVATE_KEY to the EC private key (PEM format)
-function generateJWT(): string {
-  const { COINBASE_API_KEY_NAME, COINBASE_PRIVATE_KEY } = process.env;
-  if (!COINBASE_API_KEY_NAME || !COINBASE_PRIVATE_KEY) {
-    throw new Error("Missing COINBASE_API_KEY_NAME or COINBASE_PRIVATE_KEY");
+// External JWT services
+const JWT_SERVICE_READ = "https://token-v1-mu.vercel.app/api/generate-jwt";
+const JWT_SERVICE_TRADE = "https://tokenv1-buysell.vercel.app/api/generate-jwt";
+
+async function fetchJWT(forTrade: boolean): Promise<string> {
+  const url = forTrade ? JWT_SERVICE_TRADE : JWT_SERVICE_READ;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`JWT service ${res.status}: ${await res.text()}`);
   }
-
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    iss: "cdp",
-    sub: COINBASE_API_KEY_NAME,
-    aud: ["cdp_service"],
-    nbf: now,
-    exp: now + 120,
-    uris: ["GET /*", "POST /*"],
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return jwt.sign(payload, COINBASE_PRIVATE_KEY, {
-    algorithm: "ES256",
-    keyid: COINBASE_API_KEY_NAME,
-    header: { alg: "ES256", typ: "JWT", nonce: uuidv4() },
-  } as any);
+  const data = await res.json();
+  return data.token || data.jwt || data;
 }
 
 async function cbFetch(path: string, options?: RequestInit) {
-  const token = generateJWT();
+  const method = options?.method ?? "GET";
+  const isTradeRequest = method === "POST" && path.includes("/orders");
+
+  const token = await fetchJWT(isTradeRequest);
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
@@ -40,6 +30,7 @@ async function cbFetch(path: string, options?: RequestInit) {
       ...options?.headers,
     },
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Coinbase API ${res.status}: ${text}`);

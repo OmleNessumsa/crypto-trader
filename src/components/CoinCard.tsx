@@ -16,7 +16,7 @@ export default function CoinCard({
   targetWeight: number;
 }) {
   const coin = pair.split("-")[0];
-  const config = COINS[coin] || { symbol: coin, color: "#888", icon: coin[0] };
+  const config = COINS[coin] || { symbol: coin, color: "#6b7280", icon: coin[0] };
 
   const weightPercent = (weight * 100).toFixed(1);
   const targetPercent = (targetWeight * 100).toFixed(1);
@@ -25,42 +25,51 @@ export default function CoinCard({
   const isUnder = weight < targetWeight - 0.01;
 
   return (
-    <div className="card p-5 group">
-      <div className="flex items-start justify-between mb-4">
+    <div className="card p-5 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold text-white"
-            style={{ background: `linear-gradient(135deg, ${config.color}, ${config.color}99)` }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold"
+            style={{
+              background: `linear-gradient(135deg, ${config.color}, ${config.color}cc)`,
+              color: "#fff",
+            }}
           >
             {config.icon}
           </div>
           <div>
-            <p className="font-semibold">{config.symbol}</p>
-            <p className="text-xs text-white/40">{pair}</p>
+            <p className="font-semibold text-sm">{config.symbol}</p>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>{pair}</p>
           </div>
         </div>
         {(isOver || isUnder) && (
-          <span className={`badge text-xs ${isOver ? 'badge-success' : 'badge-danger'}`}>
-            {isOver ? '+' : ''}{deviation}%
+          <span className={`badge text-xs ${isOver ? "badge-emerald" : "badge-red"}`}>
+            {isOver ? "+" : ""}{deviation}%
           </span>
         )}
       </div>
 
       {/* Balance */}
-      <div className="mb-4">
-        <p className="text-2xl font-bold font-mono">
-          {balance.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })}
+      <div className="mb-5">
+        <p className="font-mono text-xl sm:text-2xl font-semibold">
+          {balance.toLocaleString(undefined, {
+            minimumFractionDigits: balance < 1 ? 6 : 4,
+            maximumFractionDigits: balance < 1 ? 8 : 6,
+          })}
         </p>
-        <p className="text-xs text-white/40">{config.symbol} balance</p>
+        <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+          {config.symbol} balance
+        </p>
       </div>
 
-      {/* Weight bar */}
+      {/* Allocation bar */}
       <div>
         <div className="flex justify-between text-xs mb-2">
-          <span className="text-white/40">Allocation</span>
-          <span className="font-mono">{weightPercent}%</span>
+          <span style={{ color: "var(--text-tertiary)" }}>Allocation</span>
+          <span className="font-mono" style={{ color: "var(--text-secondary)" }}>{weightPercent}%</span>
         </div>
-        <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
           <div
             className="absolute h-full rounded-full transition-all duration-500"
             style={{
@@ -70,11 +79,16 @@ export default function CoinCard({
           />
           {/* Target marker */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-white/50"
-            style={{ left: `${Math.min(parseFloat(targetPercent), 100)}%` }}
+            className="absolute top-0 bottom-0 w-0.5"
+            style={{
+              left: `${Math.min(parseFloat(targetPercent), 100)}%`,
+              background: "var(--text-tertiary)",
+            }}
           />
         </div>
-        <p className="text-xs text-white/30 mt-1">Target: {targetPercent}%</p>
+        <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
+          Target: {targetPercent}%
+        </p>
       </div>
     </div>
   );

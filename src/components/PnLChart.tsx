@@ -7,10 +7,10 @@ export default function PnLChart({
 }) {
   if (data.length < 2) {
     return (
-      <div className="card p-6">
-        <h3 className="text-sm font-medium text-white/40 mb-6">Performance</h3>
-        <div className="flex items-center justify-center h-32 text-white/30 text-sm">
-          Not enough data yet
+      <div className="card p-6 sm:p-8">
+        <h3 className="label mb-6">Performance</h3>
+        <div className="flex items-center justify-center h-24" style={{ color: "var(--text-muted)" }}>
+          <span className="text-sm">Not enough data yet</span>
         </div>
       </div>
     );
@@ -21,9 +21,9 @@ export default function PnLChart({
   const max = Math.max(...values);
   const range = max - min || 1;
 
-  const W = 500;
-  const H = 120;
-  const padY = 10;
+  const W = 400;
+  const H = 100;
+  const padY = 8;
 
   const points = data.map((d, i) => {
     const x = (i / (data.length - 1)) * W;
@@ -40,45 +40,50 @@ export default function PnLChart({
   const changePercent = first > 0 ? (change / first) * 100 : 0;
   const isUp = change >= 0;
 
-  const color = isUp ? "#00ff88" : "#ff4757";
+  const color = isUp ? "var(--accent-emerald)" : "var(--accent-red)";
+  const gradientId = isUp ? "chart-grad-up" : "chart-grad-down";
 
   return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-white/40">Performance</h3>
-        <div className={`badge ${isUp ? 'badge-success' : 'badge-danger'}`}>
+    <div className="card p-6 sm:p-8">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="label">Performance</h3>
+        <span
+          className={`badge ${isUp ? "badge-emerald" : "badge-red"}`}
+        >
           <span className="font-mono">
             {isUp ? "+" : ""}{changePercent.toFixed(2)}%
           </span>
-        </div>
+        </span>
       </div>
 
-      <div className="flex gap-6 mb-4 text-xs">
+      {/* Stats row */}
+      <div className="flex gap-8 mb-5 text-xs">
         <div>
-          <span className="text-white/30">Low</span>
-          <p className="font-mono">€{min.toFixed(2)}</p>
+          <span style={{ color: "var(--text-muted)" }}>Low</span>
+          <p className="font-mono mt-0.5">€{min.toFixed(2)}</p>
         </div>
         <div>
-          <span className="text-white/30">High</span>
-          <p className="font-mono">€{max.toFixed(2)}</p>
+          <span style={{ color: "var(--text-muted)" }}>High</span>
+          <p className="font-mono mt-0.5">€{max.toFixed(2)}</p>
         </div>
         <div>
-          <span className="text-white/30">Change</span>
-          <p className="font-mono" style={{ color }}>
+          <span style={{ color: "var(--text-muted)" }}>Change</span>
+          <p className="font-mono mt-0.5" style={{ color }}>
             {isUp ? "+" : ""}€{change.toFixed(2)}
           </p>
         </div>
       </div>
 
+      {/* Chart */}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="chart-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={color} stopOpacity="0.2" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
         </defs>
 
-        <polygon points={area} fill="url(#chart-gradient)" />
+        <polygon points={area} fill={`url(#${gradientId})`} />
         <polyline
           points={polyline}
           fill="none"
@@ -91,7 +96,7 @@ export default function PnLChart({
         <circle
           cx={points[points.length - 1].x}
           cy={points[points.length - 1].y}
-          r="4"
+          r="3"
           fill={color}
         />
       </svg>

@@ -65,10 +65,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-[#00ff88]/30 border-t-[#00ff88] rounded-full animate-spin" />
-          <p className="text-white/40 text-sm">Loading...</p>
+          <div className="loading-spinner" />
+          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Loading dashboard...</p>
         </div>
       </div>
     );
@@ -76,16 +76,16 @@ export default function Dashboard() {
 
   if (error && !status) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="card p-8 max-w-sm text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#ff4757]/10 flex items-center justify-center">
-            <svg className="w-7 h-7 text-[#ff4757]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-red-dim)' }}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--accent-red)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold mb-2">Connection Error</h2>
-          <p className="text-white/50 text-sm mb-6">{error}</p>
-          <button onClick={fetchStatus} className="btn-primary text-sm">
+          <h2 className="heading-md mb-2">Connection Error</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-tertiary)' }}>{error}</p>
+          <button onClick={fetchStatus} className="btn btn-primary">
             Retry
           </button>
         </div>
@@ -99,22 +99,25 @@ export default function Dashboard() {
   const pnl = status?.pnl ?? [];
   const pairs = config?.pairs ?? ["BTC-EUR", "ETH-EUR", "SOL-EUR"];
   const eurBalance = portfolio?.balances?.["EUR"] ?? 0;
-  const totalValue = portfolio?.totalValueEur ?? 0;
+  const totalValue = portfolio?.totalValueEur ?? eurBalance;
 
   return (
-    <div className="relative z-10 min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="dashboard-container">
       {/* Header */}
-      <header className="mb-10 fade-in">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00ff88] to-[#00d4ff] flex items-center justify-center">
-              <svg className="w-6 h-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <header className="mb-8 animate-fade-up">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan))' }}
+            >
+              <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Crypto Trader</h1>
-              <p className="text-white/40 text-sm">Automated Portfolio Management</p>
+              <h1 className="text-xl font-semibold tracking-tight">Crypto Trader</h1>
+              <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Automated Portfolio</p>
             </div>
           </div>
           <StatusBadge
@@ -127,46 +130,45 @@ export default function Dashboard() {
 
       {/* Error Banner */}
       {error && (
-        <div className="mb-6 card border-[#ff4757]/20 bg-[#ff4757]/5 p-4 flex items-center gap-3 fade-in">
-          <div className="w-2 h-2 rounded-full bg-[#ff4757]" />
-          <span className="text-sm text-[#ff4757]">{error}</span>
+        <div
+          className="mb-6 card p-4 flex items-center gap-3 animate-fade-up"
+          style={{ borderColor: 'rgba(239, 68, 68, 0.2)', background: 'var(--accent-red-dim)' }}
+        >
+          <div className="status-dot" style={{ background: 'var(--accent-red)' }} />
+          <span className="text-sm" style={{ color: 'var(--accent-red)' }}>{error}</span>
         </div>
       )}
 
-      {/* Main Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 fade-in delay-1">
-        {/* Total Value */}
-        <div className="card card-glow-green p-6 overflow-hidden">
-          <div className="stat-glow bg-[#00ff88] top-0 right-0" />
-          <div className="relative">
-            <p className="text-white/40 text-sm mb-1">Total Portfolio Value</p>
-            <p className="text-4xl font-bold font-mono tracking-tight">
-              €{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8 animate-fade-up animate-delay-1">
+        {/* Total Portfolio */}
+        <div className="card card-glow-emerald p-6 sm:p-8">
+          <p className="label mb-3">Total Portfolio Value</p>
+          <p className="stat-value" style={{ color: 'var(--text-primary)' }}>
+            €{totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          {portfolio?.peakValueEur && portfolio.peakValueEur > totalValue && (
+            <p className="text-xs font-mono mt-3" style={{ color: 'var(--text-muted)' }}>
+              ATH €{portfolio.peakValueEur.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </p>
-            {portfolio?.peakValueEur && portfolio.peakValueEur > totalValue && (
-              <p className="text-white/30 text-xs mt-2 font-mono">
-                ATH: €{portfolio.peakValueEur.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </p>
-            )}
-          </div>
+          )}
         </div>
 
         {/* EUR Balance */}
-        <div className="card card-glow-blue p-6 overflow-hidden">
-          <div className="stat-glow bg-[#00d4ff] top-0 right-0" />
-          <div className="relative">
-            <p className="text-white/40 text-sm mb-1">Available EUR</p>
-            <p className="text-4xl font-bold font-mono tracking-tight">
-              €{eurBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-            <p className="text-white/30 text-xs mt-2">Ready for trading</p>
-          </div>
+        <div className="card card-glow-cyan p-6 sm:p-8">
+          <p className="label mb-3">Available EUR</p>
+          <p className="stat-value" style={{ color: 'var(--text-primary)' }}>
+            €{eurBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
+            Ready for trading
+          </p>
         </div>
       </div>
 
-      {/* Asset Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 fade-in delay-2">
-        {pairs.map((pair, i) => (
+      {/* Coin Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 animate-fade-up animate-delay-2">
+        {pairs.map((pair) => (
           <CoinCard
             key={pair}
             pair={pair}
@@ -178,38 +180,39 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8 fade-in delay-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8 animate-fade-up animate-delay-3">
         <PortfolioChart weights={portfolio?.weights ?? {}} />
         <PnLChart data={pnl} />
       </div>
 
       {/* Trade History */}
-      <div className="mb-8 fade-in delay-4">
+      <div className="mb-8 animate-fade-up animate-delay-4">
         <TradeHistory trades={trades} />
       </div>
 
-      {/* Config Section */}
-      <div className="fade-in delay-5">
+      {/* Settings Accordion */}
+      <div className="animate-fade-up animate-delay-4">
         <button
           onClick={() => setConfigOpen(!configOpen)}
-          className="w-full card p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+          className="w-full card card-interactive p-5 sm:p-6 flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: 'var(--text-tertiary)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="font-medium">Strategy Settings</span>
+            <span className="font-medium text-sm">Strategy Settings</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`badge ${config?.enabled ? 'badge-success' : 'badge-neutral'}`}>
-              {config?.enabled ? 'Active' : 'Inactive'}
+            <span className={`badge ${config?.enabled ? 'badge-emerald' : 'badge-neutral'}`}>
+              {config?.enabled ? 'Active' : 'Paused'}
             </span>
             <svg
-              className={`w-5 h-5 text-white/40 transition-transform ${configOpen ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 transition-transform duration-200 ${configOpen ? 'rotate-180' : ''}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              style={{ color: 'var(--text-tertiary)' }}
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -224,8 +227,8 @@ export default function Dashboard() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-16 pb-8 text-center">
-        <p className="text-white/20 text-xs">
+      <footer className="mt-12 pb-6 text-center">
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
           Powered by Claude AI & Coinbase
         </p>
       </footer>

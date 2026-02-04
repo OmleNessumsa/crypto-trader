@@ -6,6 +6,19 @@ export async function GET() {
   return NextResponse.json(config);
 }
 
+export async function POST(req: NextRequest) {
+  const body = (await req.json()) as Partial<TradingConfig>;
+  const current = await getConfig();
+
+  const updated: TradingConfig = {
+    ...current,
+    ...body,
+  };
+
+  await setConfig(updated);
+  return NextResponse.json(updated);
+}
+
 export async function PUT(req: NextRequest) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {

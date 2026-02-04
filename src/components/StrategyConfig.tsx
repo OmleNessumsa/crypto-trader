@@ -24,14 +24,14 @@ export default function StrategyConfig({
   }
 
   return (
-    <div className="card p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="card p-6 sm:p-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Trading Toggle */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm">Trading</p>
-              <p className="text-xs text-white/40 mt-0.5">Enable auto trading</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Enable auto trading</p>
             </div>
             <button
               type="button"
@@ -42,11 +42,11 @@ export default function StrategyConfig({
         </div>
 
         {/* AI Toggle */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm">AI Analysis</p>
-              <p className="text-xs text-white/40 mt-0.5">Claude recommendations</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Claude recommendations</p>
             </div>
             <button
               type="button"
@@ -57,13 +57,13 @@ export default function StrategyConfig({
         </div>
 
         {/* Max Trade % */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Max Trade</p>
-              <p className="text-xs text-white/40 mt-0.5">Per transaction</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Per transaction</p>
             </div>
-            <span className="font-mono text-[#00ff88]">
+            <span className="font-mono text-sm" style={{ color: "var(--accent-emerald)" }}>
               {(draft.maxTradePercent * 100).toFixed(0)}%
             </span>
           </div>
@@ -77,13 +77,13 @@ export default function StrategyConfig({
         </div>
 
         {/* Stop Loss */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Stop Loss</p>
-              <p className="text-xs text-white/40 mt-0.5">Exit threshold</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Exit threshold</p>
             </div>
-            <span className="font-mono text-[#ff4757]">
+            <span className="font-mono text-sm" style={{ color: "var(--accent-red)" }}>
               {(draft.stopLossPercent * 100).toFixed(0)}%
             </span>
           </div>
@@ -97,13 +97,13 @@ export default function StrategyConfig({
         </div>
 
         {/* Max Drawdown */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Max Drawdown</p>
-              <p className="text-xs text-white/40 mt-0.5">Pause threshold</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Pause threshold</p>
             </div>
-            <span className="font-mono text-[#fbbf24]">
+            <span className="font-mono text-sm" style={{ color: "var(--accent-amber)" }}>
               {(draft.maxDrawdownPercent * 100).toFixed(0)}%
             </span>
           </div>
@@ -117,13 +117,13 @@ export default function StrategyConfig({
         </div>
 
         {/* Cooldown */}
-        <div className="bg-white/[0.02] rounded-2xl p-4">
+        <div className="p-5 rounded-xl" style={{ background: "var(--bg-tertiary)" }}>
           <div className="flex justify-between mb-3">
             <div>
               <p className="font-medium text-sm">Cooldown</p>
-              <p className="text-xs text-white/40 mt-0.5">Between trades</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Between trades</p>
             </div>
-            <span className="font-mono text-white/60">
+            <span className="font-mono text-sm" style={{ color: "var(--text-secondary)" }}>
               {draft.cooldownMinutes}m
             </span>
           </div>
@@ -142,7 +142,7 @@ export default function StrategyConfig({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="btn-primary text-sm flex items-center gap-2"
+          className="btn btn-primary text-sm"
         >
           {saving ? (
             <>

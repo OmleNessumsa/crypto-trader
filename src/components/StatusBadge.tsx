@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function StatusBadge({
   enabled,
   lastTickTime,
@@ -7,41 +11,69 @@ export default function StatusBadge({
   lastTickTime: string | null;
   drawdownPaused: boolean;
 }) {
-  function relative(ts: string | null) {
-    if (!ts) return "Never";
-    const diff = Date.now() - new Date(ts).getTime();
-    const secs = Math.floor(diff / 1000);
-    if (secs < 60) return `${secs}s ago`;
-    const mins = Math.floor(secs / 60);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    return `${hrs}h ago`;
+  const [timeAgo, setTimeAgo] = useState<string>("");
+
+  useEffect(() => {
+    function update() {
+      if (!lastTickTime) {
+        setTimeAgo("Never");
+        return;
+      }
+      const diff = Date.now() - new Date(lastTickTime).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) setTimeAgo("Just now");
+      else if (mins < 60) setTimeAgo(`${mins}m ago`);
+      else setTimeAgo(`${Math.floor(mins / 60)}h ago`);
+    }
+    update();
+    const interval = setInterval(update, 30000);
+    return () => clearInterval(interval);
+  }, [lastTickTime]);
+
+  const isStale = lastTickTime
+    ? Date.now() - new Date(lastTickTime).getTime() > 10 * 60 * 1000
+    : true;
+
+  let status: "active" | "warning" | "inactive";
+  let label: string;
+
+  if (drawdownPaused) {
+    status = "warning";
+    label = "Drawdown Paused";
+  } else if (!enabled) {
+    status = "inactive";
+    label = "Paused";
+  } else if (isStale) {
+    status = "warning";
+    label = "Stale";
+  } else {
+    status = "active";
+    label = "Running";
   }
 
-  const badgeClass = drawdownPaused
-    ? "badge-warning"
-    : enabled
-      ? "badge-success"
-      : "badge-danger";
+  const dotClass =
+    status === "active"
+      ? "status-dot-active"
+      : status === "warning"
+      ? "status-dot-warning"
+      : "status-dot-inactive";
 
-  const label = drawdownPaused
-    ? "Paused"
-    : enabled
-      ? "Running"
-      : "Stopped";
+  const badgeClass =
+    status === "active"
+      ? "badge-emerald"
+      : status === "warning"
+      ? "badge-amber"
+      : "badge-neutral";
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       <div className={`badge ${badgeClass}`}>
-        <span className={`w-2 h-2 rounded-full pulse-dot ${
-          drawdownPaused ? "bg-[#fbbf24]" : enabled ? "bg-[#00ff88]" : "bg-[#ff4757]"
-        }`} />
-        {label}
+        <div className={`status-dot ${dotClass} ${status === "active" ? "animate-pulse" : ""}`} />
+        <span>{label}</span>
       </div>
-      <div className="text-sm text-white/40">
-        <span>Last tick: </span>
-        <span className="font-mono text-white/60">{relative(lastTickTime)}</span>
-      </div>
+      <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+        {timeAgo}
+      </span>
     </div>
   );
 }

@@ -22,7 +22,7 @@ export async function GET() {
       }
     }
   } catch {
-    // Coinbase not configured or error - use stored balances
+    // Coinbase error - use stored balances
   }
 
   // Merge live balances into portfolio if available
